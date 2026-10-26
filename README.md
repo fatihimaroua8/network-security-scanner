@@ -14,13 +14,16 @@ pip install -e ".[dev]"
 ## Usage
 ```bash
 nmap -sV -O -oX scan.xml 192.168.56.101     # lab target you own
-netscanner scan.xml -o inventory.json
+netscanner parse scan.xml -o inventory.json   # display + JSON export
+netscanner import scan.xml                    # store in SQLite (netscanner.db)
+netscanner scans                              # list stored scans
+netscanner show 1                             # display stored scan #1
 pytest
 ```
 
 ## Roadmap
 - [x] Step 1 – Nmap XML parser + data models
-- [ ] Step 2 – SQLite inventory
+- [x] Step 2 – SQLite inventory
 - [ ] Step 3 – Rules engine & severity
 - [ ] Step 4 – CVE correlation (NVD)
 - [ ] Step 5 – HTML/PDF reports, scan diff
