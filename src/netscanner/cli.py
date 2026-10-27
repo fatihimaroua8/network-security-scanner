@@ -5,6 +5,8 @@
   netscanner scans                           list stored scans
   netscanner show   ID                       display a stored scan
   netscanner delete ID                       delete a stored scan
+  netscanner analyze ID [--min-severity high] [-o findings.json]
+                                             run the rules engine on a stored scan
 """
 from __future__ import annotations
 
@@ -13,6 +15,8 @@ import json
 import sys
 
 from . import db
+from .engine import analyze, summarize
+from .findings import Finding, Severity
 from .models import ScanResult
 from .parser import NmapParseError, parse_nmap_xml
 
@@ -24,6 +28,16 @@ def print_scan(scan: ScanResult) -> None:
             banner = p.service.banner if p.service else ""
             name = p.service.name if p.service else "?"
             print(f"  {p.number}/{p.protocol:<4} {name:<12} {banner}")
+
+
+def print_findings(findings: list[Finding]) -> None:
+    for f in findings:
+        print(f"[{f.severity.name}] {f.title}  -  {f.host}:{f.port}/{f.protocol}")
+        print(f"    Evidence: {f.evidence}")
+        print(f"    Fix:      {f.recommendation}")
+        if f.references:
+            print(f"    Refs:     {', '.join(f.references)}")
+        print()
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -47,6 +61,12 @@ def build_parser() -> argparse.ArgumentParser:
 
     p = sub.add_parser("delete", help="delete a stored scan")
     p.add_argument("id", type=int)
+
+    p = sub.add_parser("analyze", help="run the rules engine on a stored scan")
+    p.add_argument("id", type=int)
+    p.add_argument("--min-severity", choices=[s.name.lower() for s in Severity], default="info",
+                   help="hide findings below this severity")
+    p.add_argument("-o", "--output", help="also write the findings as JSON")
 
     for sp in sub.choices.values():
         sp.add_argument("--db", default=db.DEFAULT_DB, help=f"database file (default: {db.DEFAULT_DB})")
@@ -86,6 +106,18 @@ def main(argv: list[str] | None = None) -> int:
         elif args.command == "delete":
             db.delete_scan(db.connect(args.db), args.id)
             print(f"Scan #{args.id} deleted.")
+
+        elif args.command == "analyze":
+            scan = db.load_scan(db.connect(args.db), args.id)
+            threshold = Severity[args.min_severity.upper()]
+            findings = [f for f in analyze(scan) if f.severity >= threshold]
+            counts = ", ".join(f"{n} {sev}" for sev, n in summarize(findings).items()) or "none"
+            print(f"Scan #{args.id}: {len(scan.hosts)} host(s), {len(findings)} finding(s) ({counts})\n")
+            print_findings(findings)
+            if args.output:
+                with open(args.output, "w", encoding="utf-8") as fh:
+                    json.dump([f.to_dict() for f in findings], fh, indent=2, ensure_ascii=False)
+                print(f"JSON written to {args.output}")
 
     except (NmapParseError, FileNotFoundError) as exc:
         print(f"Error: {exc}", file=sys.stderr)

@@ -18,12 +18,13 @@ netscanner parse scan.xml -o inventory.json   # display + JSON export
 netscanner import scan.xml                    # store in SQLite (netscanner.db)
 netscanner scans                              # list stored scans
 netscanner show 1                             # display stored scan #1
+netscanner analyze 1 --min-severity medium    # security findings
 pytest
 ```
 
 ## Roadmap
 - [x] Step 1 – Nmap XML parser + data models
 - [x] Step 2 – SQLite inventory
-- [ ] Step 3 – Rules engine & severity
+- [x] Step 3 – Rules engine & severity
 - [ ] Step 4 – CVE correlation (NVD)
 - [ ] Step 5 – HTML/PDF reports, scan diff
