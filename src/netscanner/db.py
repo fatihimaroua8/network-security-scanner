@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from .models import Host, Port, ScanResult, Service
@@ -53,6 +53,12 @@ CREATE TABLE IF NOT EXISTS scripts (
     port_id    INTEGER NOT NULL REFERENCES ports(id) ON DELETE CASCADE,
     script_id  TEXT NOT NULL,
     output     TEXT
+);
+
+CREATE TABLE IF NOT EXISTS cve_cache (
+    cpe         TEXT PRIMARY KEY,   -- CPE 2.3 string used for the NVD lookup
+    fetched_at  TEXT NOT NULL,
+    payload     TEXT NOT NULL       -- JSON list of CVE records
 );
 
 CREATE INDEX IF NOT EXISTS idx_hosts_scan   ON hosts(scan_id);
@@ -175,3 +181,22 @@ def delete_scan(conn: sqlite3.Connection, scan_id: int) -> None:
         cur = conn.execute("DELETE FROM scans WHERE id = ?", (scan_id,))
     if cur.rowcount == 0:
         raise ScanNotFound(scan_id)
+
+
+def cache_get(conn: sqlite3.Connection, cpe: str, max_age_days: int = 7) -> list[dict] | None:
+    """Cached NVD answer for a CPE, or None if absent or older than max_age_days."""
+    row = conn.execute("SELECT fetched_at, payload FROM cve_cache WHERE cpe = ?", (cpe,)).fetchone()
+    if row is None:
+        return None
+    age = datetime.now(timezone.utc) - datetime.fromisoformat(row["fetched_at"])
+    if age > timedelta(days=max_age_days):
+        return None
+    return json.loads(row["payload"])
+
+
+def cache_put(conn: sqlite3.Connection, cpe: str, records: list[dict]) -> None:
+    with conn:
+        conn.execute(
+            "INSERT OR REPLACE INTO cve_cache (cpe, fetched_at, payload) VALUES (?, ?, ?)",
+            (cpe, datetime.now(timezone.utc).isoformat(timespec="seconds"), json.dumps(records)),
+        )

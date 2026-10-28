@@ -19,6 +19,7 @@ netscanner import scan.xml                    # store in SQLite (netscanner.db)
 netscanner scans                              # list stored scans
 netscanner show 1                             # display stored scan #1
 netscanner analyze 1 --min-severity medium    # security findings
+netscanner analyze 1 --cve                    # + known CVEs from the NVD (internet)
 pytest
 ```
 
@@ -26,5 +27,11 @@ pytest
 - [x] Step 1 – Nmap XML parser + data models
 - [x] Step 2 – SQLite inventory
 - [x] Step 3 – Rules engine & severity
-- [ ] Step 4 – CVE correlation (NVD)
+- [x] Step 4 – CVE correlation (NVD)
 - [ ] Step 5 – HTML/PDF reports, scan diff
+
+## Limitations
+- CVE matching is **version-based**: it can report CVEs already fixed by a distribution backport (false positives)
+  and miss software Nmap could not identify (false negatives).
+- Only services for which Nmap reports a versioned application CPE are checked.
+- Nmap CPE vendor/product names do not always match the NVD dictionary; unknown CPEs return no CVE.

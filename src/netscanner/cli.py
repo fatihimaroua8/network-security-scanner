@@ -5,19 +5,23 @@
   netscanner scans                           list stored scans
   netscanner show   ID                       display a stored scan
   netscanner delete ID                       delete a stored scan
-  netscanner analyze ID [--min-severity high] [-o findings.json]
+  netscanner analyze ID [--min-severity high] [-o findings.json] [--cve]
                                              run the rules engine on a stored scan
+                                             (--cve: also look up known CVEs in the NVD)
 """
 from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 
 from . import db
-from .engine import analyze, summarize
+from .correlate import correlate
+from .engine import analyze, sort_findings, summarize
 from .findings import Finding, Severity
 from .models import ScanResult
+from .nvd import NvdClient
 from .parser import NmapParseError, parse_nmap_xml
 
 
@@ -67,6 +71,10 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--min-severity", choices=[s.name.lower() for s in Severity], default="info",
                    help="hide findings below this severity")
     p.add_argument("-o", "--output", help="also write the findings as JSON")
+    p.add_argument("--cve", action="store_true",
+                   help="correlate detected software versions with NVD CVEs (needs internet)")
+    p.add_argument("--nvd-key", help="NVD API key (or set NVD_API_KEY); raises the rate limit")
+    p.add_argument("--refresh", action="store_true", help="ignore the local CVE cache")
 
     for sp in sub.choices.values():
         sp.add_argument("--db", default=db.DEFAULT_DB, help=f"database file (default: {db.DEFAULT_DB})")
@@ -108,9 +116,17 @@ def main(argv: list[str] | None = None) -> int:
             print(f"Scan #{args.id} deleted.")
 
         elif args.command == "analyze":
-            scan = db.load_scan(db.connect(args.db), args.id)
+            conn = db.connect(args.db)
+            scan = db.load_scan(conn, args.id)
             threshold = Severity[args.min_severity.upper()]
-            findings = [f for f in analyze(scan) if f.severity >= threshold]
+            findings, warnings = analyze(scan), []
+            if args.cve:
+                client = NvdClient(api_key=args.nvd_key or os.environ.get("NVD_API_KEY"))
+                cve_findings, warnings = correlate(
+                    scan, client, conn, refresh=args.refresh,
+                    progress=lambda msg: print(msg, file=sys.stderr))
+                findings = sort_findings(findings + cve_findings)
+            findings = [f for f in findings if f.severity >= threshold]
             counts = ", ".join(f"{n} {sev}" for sev, n in summarize(findings).items()) or "none"
             print(f"Scan #{args.id}: {len(scan.hosts)} host(s), {len(findings)} finding(s) ({counts})\n")
             print_findings(findings)
@@ -118,6 +134,8 @@ def main(argv: list[str] | None = None) -> int:
                 with open(args.output, "w", encoding="utf-8") as fh:
                     json.dump([f.to_dict() for f in findings], fh, indent=2, ensure_ascii=False)
                 print(f"JSON written to {args.output}")
+            for w in warnings:
+                print(f"Warning: CVE lookup failed - {w}", file=sys.stderr)
 
     except (NmapParseError, FileNotFoundError) as exc:
         print(f"Error: {exc}", file=sys.stderr)

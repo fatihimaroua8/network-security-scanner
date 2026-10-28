@@ -8,6 +8,11 @@ from .models import ScanResult
 from .rules import RULES, Rule
 
 
+def sort_findings(findings: list[Finding]) -> list[Finding]:
+    """Most severe first, then by host, port and rule id."""
+    return sorted(findings, key=lambda f: (-f.severity, f.host, f.port, f.rule_id))
+
+
 def analyze(scan: ScanResult, rules: list[Rule] | None = None) -> list[Finding]:
     """Return findings sorted by severity (highest first), then host and port."""
     rules = RULES if rules is None else rules
@@ -24,8 +29,7 @@ def analyze(scan: ScanResult, rules: list[Rule] | None = None) -> list[Finding]:
                         recommendation=rule.recommendation,
                         references=list(rule.references),
                     ))
-    findings.sort(key=lambda f: (-f.severity, f.host, f.port, f.rule_id))
-    return findings
+    return sort_findings(findings)
 
 
 def summarize(findings: list[Finding]) -> dict[str, int]:
