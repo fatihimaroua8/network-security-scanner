@@ -200,3 +200,11 @@ def cache_put(conn: sqlite3.Connection, cpe: str, records: list[dict]) -> None:
             "INSERT OR REPLACE INTO cve_cache (cpe, fetched_at, payload) VALUES (?, ?, ?)",
             (cpe, datetime.now(timezone.utc).isoformat(timespec="seconds"), json.dumps(records)),
         )
+
+
+def get_scan_meta(conn: sqlite3.Connection, scan_id: int) -> dict:
+    """source_file and imported_at of a stored scan."""
+    row = conn.execute("SELECT source_file, imported_at FROM scans WHERE id = ?", (scan_id,)).fetchone()
+    if row is None:
+        raise ScanNotFound(scan_id)
+    return {"source_file": row["source_file"] or "", "imported_at": row["imported_at"]}

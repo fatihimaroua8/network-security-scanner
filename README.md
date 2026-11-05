@@ -20,6 +20,8 @@ netscanner scans                              # list stored scans
 netscanner show 1                             # display stored scan #1
 netscanner analyze 1 --min-severity medium    # security findings
 netscanner analyze 1 --cve                    # + known CVEs from the NVD (internet)
+netscanner report 1 -o report.html            # HTML report (browser: Print > Save as PDF)
+netscanner diff 1 2                           # what changed between two scans
 pytest
 ```
 
@@ -28,9 +30,10 @@ pytest
 - [x] Step 2 – SQLite inventory
 - [x] Step 3 – Rules engine & severity
 - [x] Step 4 – CVE correlation (NVD)
-- [ ] Step 5 – HTML/PDF reports, scan diff
+- [x] Step 5 – HTML report (print to PDF), scan diff
 
 ## Limitations
+- `diff` assumes both scans used the same scope and port range: a port that was simply not scanned looks "closed".
 - CVE matching is **version-based**: it can report CVEs already fixed by a distribution backport (false positives)
   and miss software Nmap could not identify (false negatives).
 - Only services for which Nmap reports a versioned application CPE are checked.

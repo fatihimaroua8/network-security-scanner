@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<!-- Same lab as sample_scan.xml, scanned later: telnet closed, Apache upgraded,
+     new web service on 8080, one host gone, one new host. -->
+<nmaprun scanner="nmap" args="nmap -sV -O -oX scan2.xml 192.168.56.0/24" start="1761950000" version="7.94">
+  <host>
+    <status state="up" reason="arp-response"/>
+    <address addr="192.168.56.101" addrtype="ipv4"/>
+    <address addr="08:00:27:AA:BB:CC" addrtype="mac" vendor="PCS Systemtechnik"/>
+    <hostnames><hostname name="metasploitable.lab" type="PTR"/></hostnames>
+    <ports>
+      <port protocol="tcp" portid="21"><state state="open" reason="syn-ack"/>
+        <service name="ftp" product="vsftpd" version="2.3.4"><cpe>cpe:/a:vsftpd:vsftpd:2.3.4</cpe></service>
+        <script id="ftp-anon" output="Anonymous FTP login allowed (FTP code 230)"/>
+      </port>
+      <port protocol="tcp" portid="23"><state state="closed" reason="reset"/></port>
+      <port protocol="tcp" portid="80"><state state="open" reason="syn-ack"/>
+        <service name="http" product="Apache httpd" version="2.4.58" extrainfo="(Ubuntu)">
+          <cpe>cpe:/a:apache:http_server:2.4.58</cpe></service>
+      </port>
+      <port protocol="tcp" portid="3306"><state state="open" reason="syn-ack"/>
+        <service name="mysql" product="MySQL" version="5.0.51a-3ubuntu5"/>
+      </port>
+      <port protocol="tcp" portid="8080"><state state="open" reason="syn-ack"/>
+        <service name="http" product="nginx" version="1.25.3"/>
+      </port>
+    </ports>
+    <os><osmatch name="Linux 2.6.9 - 2.6.33" accuracy="95"/></os>
+  </host>
+  <host>
+    <status state="up" reason="arp-response"/>
+    <address addr="192.168.56.103" addrtype="ipv4"/>
+    <ports>
+      <port protocol="tcp" portid="3389"><state state="open" reason="syn-ack"/>
+        <service name="ms-wbt-server" product="Microsoft Terminal Services"/>
+      </port>
+    </ports>
+  </host>
+</nmaprun>

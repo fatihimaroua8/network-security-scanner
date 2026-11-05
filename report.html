@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Network Security Report - scan #1</title>
+<style>
+  :root { --fg:#1f2937; --muted:#6b7280; --line:#e5e7eb; --bg:#ffffff; --card:#f9fafb;
+          --critical:#7f1d1d; --high:#c2410c; --medium:#b45309; --low:#1d4ed8; --info:#4b5563; }
+  * { box-sizing: border-box; }
+  body { font: 15px/1.5 system-ui, -apple-system, Segoe UI, Roboto, sans-serif; color: var(--fg);
+         background: var(--bg); max-width: 960px; margin: 0 auto; padding: 32px 20px; }
+  h1 { margin: 0 0 4px; font-size: 26px; } h2 { margin-top: 36px; border-bottom: 2px solid var(--line); padding-bottom: 6px; }
+  h3 { margin: 24px 0 8px; } code { background: var(--card); padding: 1px 5px; border-radius: 4px; word-break: break-all; }
+  .meta { color: var(--muted); margin: 2px 0; }
+  .notice { background: #fffbeb; border: 1px solid #fcd34d; padding: 10px 14px; border-radius: 6px; margin: 18px 0; }
+  .cards { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0; }
+  .card { flex: 1 1 110px; background: var(--card); border: 1px solid var(--line); border-radius: 8px;
+          padding: 12px; text-align: center; }
+  .card .n { font-size: 28px; font-weight: 700; } .card .l { color: var(--muted); font-size: 12px; text-transform: uppercase; }
+  .card.critical .n { color: var(--critical); } .card.high .n { color: var(--high); }
+  .card.medium .n { color: var(--medium); } .card.low .n { color: var(--low); }
+  table { border-collapse: collapse; width: 100%; margin: 8px 0 16px; }
+  th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--line); font-size: 14px; }
+  th { background: var(--card); }
+  .badge { display: inline-block; color: #fff; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; }
+  .badge.critical { background: var(--critical); } .badge.high { background: var(--high); }
+  .badge.medium { background: var(--medium); } .badge.low { background: var(--low); } .badge.info { background: var(--info); }
+  .finding { border: 1px solid var(--line); border-left-width: 5px; border-radius: 6px; padding: 10px 14px; margin: 10px 0; page-break-inside: avoid; }
+  .finding.critical { border-left-color: var(--critical); } .finding.high { border-left-color: var(--high); }
+  .finding.medium { border-left-color: var(--medium); } .finding.low { border-left-color: var(--low); }
+  .finding.info { border-left-color: var(--info); } .finding p { margin: 4px 0; }
+  .where { color: var(--muted); font-size: 13px; margin-left: 6px; }
+  .host { page-break-before: auto; } footer { margin-top: 40px; color: var(--muted); font-size: 12px; }
+  @media print { body { max-width: none; padding: 0; } .host { page-break-inside: avoid; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Network Security Report</h1>
+  <p class="meta">Scan #1 &middot; Source: sample_scan.xml &middot; Nmap 7.94 &middot; Scanned: 2025-10-24 23:53 UTC</p>
+  <p class="meta">Command: <code>nmap -sV -O -oX scan.xml 192.168.56.0/24</code></p>
+</header>
+
+<p class="notice"><strong>Authorized scans only.</strong> This report describes exposure observed during a scan of systems the author is authorized to test.
+Findings are indicators to verify, not proof of exploitability.</p>
+
+<section>
+  <h2>Executive summary</h2>
+  <div class="cards">
+    <div class="card"><div class="n">2</div><div class="l">Hosts</div></div>
+    <div class="card"><div class="n">5</div><div class="l">Open ports</div></div>
+    
+    <div class="card critical"><div class="n">1</div><div class="l">CRITICAL</div></div>
+    
+    <div class="card high"><div class="n">3</div><div class="l">HIGH</div></div>
+    
+    <div class="card medium"><div class="n">3</div><div class="l">MEDIUM</div></div>
+    
+    <div class="card low"><div class="n">1</div><div class="l">LOW</div></div>
+    
+    <div class="card info"><div class="n">0</div><div class="l">INFO</div></div>
+    
+  </div>
+  
+    <p>8 finding(s). Highest severity: <span class="badge critical">CRITICAL</span></p>
+    
+    <h3>Priority issues</h3>
+    <ul>
+      <li><span class="badge critical">CRITICAL</span> vsftpd 2.3.4 backdoor <span class="where">192.168.56.101:21/tcp</span></li><li><span class="badge high">HIGH</span> Anonymous FTP login allowed <span class="where">192.168.56.101:21/tcp</span></li><li><span class="badge high">HIGH</span> Telnet service exposed <span class="where">192.168.56.101:23/tcp</span></li><li><span class="badge high">HIGH</span> Database service exposed <span class="where">192.168.56.101:3306/tcp</span></li>
+    </ul>
+    
+  
+</section>
+
+<section>
+  <h2>Hosts</h2>
+  
+  <div class="host">
+    <h3>192.168.56.101 <span class="where">metasploitable.lab</span></h3>
+    <p class="meta">OS guess: Linux 2.6.9 - 2.6.33 (95%) &middot; MAC 08:00:27:AA:BB:CC (PCS Systemtechnik)</p>
+
+    
+    <table>
+      <tr><th>Port</th><th>Service</th><th>Product / version</th></tr>
+      <tr><td>21/tcp</td><td>ftp</td><td>vsftpd 2.3.4</td></tr><tr><td>23/tcp</td><td>telnet</td><td>Linux telnetd</td></tr><tr><td>80/tcp</td><td>http</td><td>Apache httpd 2.2.8 (Ubuntu) DAV/2</td></tr><tr><td>3306/tcp</td><td>mysql</td><td>MySQL 5.0.51a-3ubuntu5</td></tr>
+    </table>
+    
+
+    
+    <div class="finding critical">
+      <div><span class="badge critical">CRITICAL</span> <strong>vsftpd 2.3.4 backdoor</strong><span class="where">21/tcp</span></div>
+      <p><strong>Evidence:</strong> vsftpd 2.3.4 detected on 21/tcp (vsftpd 2.3.4)</p>
+      <p><strong>Why it matters:</strong> This vsftpd release shipped with a backdoor that opens a root shell when a username ending in &#39;:)&#39; is sent.</p>
+      <p><strong>Recommendation:</strong> Remove or upgrade vsftpd immediately and treat the host as compromised.</p>
+      <p><strong>References:</strong>
+        <a href="https://nvd.nist.gov/vuln/detail/CVE-2011-2523">CVE-2011-2523</a></p>
+    </div>
+    
+    <div class="finding high">
+      <div><span class="badge high">HIGH</span> <strong>Anonymous FTP login allowed</strong><span class="where">21/tcp</span></div>
+      <p><strong>Evidence:</strong> NSE ftp-anon on 21/tcp (vsftpd 2.3.4): Anonymous FTP login allowed (FTP code 230)</p>
+      <p><strong>Why it matters:</strong> Anyone can read (and possibly write) files on this FTP server without credentials.</p>
+      <p><strong>Recommendation:</strong> Disable anonymous access or restrict it to a read-only, non-sensitive directory.</p>
+      
+    </div>
+    
+    <div class="finding high">
+      <div><span class="badge high">HIGH</span> <strong>Telnet service exposed</strong><span class="where">23/tcp</span></div>
+      <p><strong>Evidence:</strong> Telnet service open on 23/tcp (Linux telnetd)</p>
+      <p><strong>Why it matters:</strong> Telnet transmits credentials and data in clear text.</p>
+      <p><strong>Recommendation:</strong> Disable Telnet and use SSH instead.</p>
+      
+    </div>
+    
+    <div class="finding high">
+      <div><span class="badge high">HIGH</span> <strong>Database service exposed</strong><span class="where">3306/tcp</span></div>
+      <p><strong>Evidence:</strong> Database service (mysql) open on 3306/tcp (MySQL 5.0.51a-3ubuntu5)</p>
+      <p><strong>Why it matters:</strong> A database listening on the network is reachable by attackers for brute force and exploitation.</p>
+      <p><strong>Recommendation:</strong> Bind the database to localhost or a private interface and filter the port.</p>
+      
+    </div>
+    
+    <div class="finding medium">
+      <div><span class="badge medium">MEDIUM</span> <strong>FTP without encryption</strong><span class="where">21/tcp</span></div>
+      <p><strong>Evidence:</strong> FTP without TLS on 21/tcp (vsftpd 2.3.4)</p>
+      <p><strong>Why it matters:</strong> FTP sends credentials and files in clear text.</p>
+      <p><strong>Recommendation:</strong> Use SFTP or FTPS.</p>
+      
+    </div>
+    
+    <div class="finding medium">
+      <div><span class="badge medium">MEDIUM</span> <strong>End-of-life software</strong><span class="where">80/tcp</span></div>
+      <p><strong>Evidence:</strong> Apache httpd 2.2.8 on 80/tcp (Apache httpd 2.2.8): Apache HTTP Server 2.0/2.2 is end of life</p>
+      <p><strong>Why it matters:</strong> This product version no longer receives security fixes.</p>
+      <p><strong>Recommendation:</strong> Upgrade to a supported release.</p>
+      
+    </div>
+    
+    <div class="finding medium">
+      <div><span class="badge medium">MEDIUM</span> <strong>End-of-life software</strong><span class="where">3306/tcp</span></div>
+      <p><strong>Evidence:</strong> MySQL 5.0.51a-3ubuntu5 on 3306/tcp (MySQL 5.0.51a-3ubuntu5): MySQL 5.x is end of life</p>
+      <p><strong>Why it matters:</strong> This product version no longer receives security fixes.</p>
+      <p><strong>Recommendation:</strong> Upgrade to a supported release.</p>
+      
+    </div>
+    
+    <div class="finding low">
+      <div><span class="badge low">LOW</span> <strong>HTTP without TLS</strong><span class="where">80/tcp</span></div>
+      <p><strong>Evidence:</strong> HTTP without TLS on 80/tcp (Apache httpd 2.2.8)</p>
+      <p><strong>Why it matters:</strong> Traffic is not encrypted and can be read or modified in transit.</p>
+      <p><strong>Recommendation:</strong> Serve the site over HTTPS and redirect HTTP to HTTPS.</p>
+      
+    </div>
+    
+  </div>
+  
+  <div class="host">
+    <h3>192.168.56.102</h3>
+    <p class="meta">OS: unknown</p>
+
+    
+    <table>
+      <tr><th>Port</th><th>Service</th><th>Product / version</th></tr>
+      <tr><td>22/tcp</td><td>ssh</td><td>OpenSSH 9.2p1</td></tr>
+    </table>
+    
+
+    
+  </div>
+  
+</section>
+
+<footer>Generated 2026-11-05 13:25 UTC by netscanner.</footer>
+</body>
+</html>
